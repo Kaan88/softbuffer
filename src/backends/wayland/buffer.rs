@@ -78,11 +78,26 @@ pub(super) struct WaylandBuffer {
     pub width: i32,
     pub height: i32,
     released: Arc<AtomicBool>,
+    argb: bool,
     pub age: u8,
 }
 
+fn format(argb: bool) -> wl_shm::Format {
+    if argb {
+        wl_shm::Format::Argb8888
+    } else {
+        wl_shm::Format::Xrgb8888
+    }
+}
+
 impl WaylandBuffer {
-    pub fn new(shm: &wl_shm::WlShm, width: i32, height: i32, qh: &QueueHandle<State>) -> Self {
+    pub fn new(
+        shm: &wl_shm::WlShm,
+        width: i32,
+        height: i32,
+        qh: &QueueHandle<State>,
+        argb: bool,
+    ) -> Self {
         // Calculate size to use for shm pool
         let pool_size = get_pool_size(width, height);
 
@@ -99,12 +114,13 @@ impl WaylandBuffer {
             width,
             height,
             width * 4,
-            wl_shm::Format::Xrgb8888,
+            format(argb),
             qh,
             released.clone(),
         );
 
         Self {
+            argb,
             qh: qh.clone(),
             map,
             tempfile,
@@ -139,7 +155,7 @@ impl WaylandBuffer {
                 width,
                 height,
                 width * 4,
-                wl_shm::Format::Xrgb8888,
+                format(self.argb),
                 &self.qh,
                 self.released.clone(),
             );

@@ -115,6 +115,13 @@ impl<D: HasDisplayHandle, W: HasWindowHandle> Surface<D, W> {
         self.surface_impl.resize(width, height)
     }
 
+    /// Wayland only (a no-op returning `false` elsewhere): from the next [`Surface::buffer_mut`]
+    /// on, the buffer is premultiplied ARGB8888 instead of XRGB8888, so the alpha byte of every
+    /// pixel is honoured (0xFF for opaque). Needs a transparent window to be useful.
+    pub fn set_premultiplied_alpha(&mut self, on: bool) -> bool {
+        self.surface_impl.set_premultiplied_alpha(on)
+    }
+
     /// Copies the window contents into a buffer.
     ///
     /// ## Platform Dependent Behavior

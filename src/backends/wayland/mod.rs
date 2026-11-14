@@ -81,6 +81,7 @@ pub struct WaylandImpl<D: ?Sized, W: ?Sized> {
     surface: Option<wl_surface::WlSurface>,
     buffers: Option<(WaylandBuffer, WaylandBuffer)>,
     size: Option<(NonZeroI32, NonZeroI32)>,
+    argb: bool,
 
     /// The pointer to the window object.
     ///
@@ -178,6 +179,7 @@ impl<D: HasDisplayHandle + ?Sized, W: HasWindowHandle> SurfaceInterface<D, W>
             surface: Some(surface),
             buffers: Default::default(),
             size: None,
+            argb: false,
             window_handle: window,
         })
     }
@@ -185,6 +187,15 @@ impl<D: HasDisplayHandle + ?Sized, W: HasWindowHandle> SurfaceInterface<D, W>
     #[inline]
     fn window(&self) -> &W {
         &self.window_handle
+    }
+
+    fn set_premultiplied_alpha(&mut self, on: bool) -> bool {
+        if self.argb != on {
+            self.argb = on;
+            // The buffers are created with the format: start over.
+            self.buffers = None;
+        }
+        self.argb
     }
 
     fn resize(&mut self, width: NonZeroU32, height: NonZeroU32) -> Result<(), SoftBufferError> {
@@ -232,12 +243,14 @@ impl<D: HasDisplayHandle + ?Sized, W: HasWindowHandle> SurfaceInterface<D, W>
                     width.get(),
                     height.get(),
                     &self.display.qh,
+                    self.argb,
                 ),
                 WaylandBuffer::new(
                     &self.display.shm,
                     width.get(),
                     height.get(),
                     &self.display.qh,
+                    self.argb,
                 ),
             ));
         };

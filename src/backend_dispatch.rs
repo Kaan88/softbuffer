@@ -117,6 +117,15 @@ macro_rules! make_dispatch {
                 }
             }
 
+            fn set_premultiplied_alpha(&mut self, on: bool) -> bool {
+                match self {
+                    $(
+                        $(#[$attr])*
+                        Self::$name(inner) => inner.set_premultiplied_alpha(on),
+                    )*
+                }
+            }
+
             fn fetch(&mut self) -> Result<Vec<u32>, SoftBufferError> {
                 match self {
                     $(

@@ -29,6 +29,12 @@ pub(crate) trait SurfaceInterface<D: HasDisplayHandle + ?Sized, W: HasWindowHand
     /// Get a mutable reference to the buffer.
     fn buffer_mut(&mut self) -> Result<Self::Buffer<'_>, SoftBufferError>;
     /// Fetch the buffer from the window.
+    /// Ask for buffers whose alpha channel is honoured (premultiplied). Only Wayland does
+    /// anything; returns whether alpha is honoured now.
+    fn set_premultiplied_alpha(&mut self, _on: bool) -> bool {
+        false
+    }
+
     fn fetch(&mut self) -> Result<Vec<u32>, SoftBufferError> {
         Err(SoftBufferError::Unimplemented)
     }
